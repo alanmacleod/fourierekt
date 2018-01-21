@@ -2,13 +2,18 @@
 
 function Fourier()
 {
-  this.lastBar = 30;
+  this.lastBar = 25;
   this.pastBars = 300;
   this.futBars = 100;
-  this.harmNo = 20;
+  this.harmonics = 20;
   this.freqTol = 0.0001;
   this.pv = [];
   this.fv = [];
+
+  this.getprice = function(bars, index)
+  {
+      return bars[index].O;
+  };
 
   this.extrapolate = function(bars)
   {
@@ -22,14 +27,15 @@ function Fourier()
 
     av /= np;
 
-    // generate carrier signal
+    // generate carrier signal (maybe try EMA/MA ?)
     for (var t=0; t<np; t++)
     {
       this.pv[t] = av;
       if (t <= nf) this.fv[t] = av;
     }
 
-    for (var harm=0; harm<this.harmNo; harm++)
+    // compute frequency bands
+    for (var harm=0; harm<this.harmonics; harm++)
     {
       var co = this.freq(bars);
 
@@ -41,10 +47,9 @@ function Fourier()
       }
     }
 
-
     return {
       past: {offset: -this.lastBar, data: this.pv},
-      future: {offset: this.futBars - this.lastBar, data: this.fv}
+      future: {offset: -this.lastBar, data: this.fv}
     };
   };
 
