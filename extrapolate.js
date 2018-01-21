@@ -12,7 +12,7 @@ function Fourier()
 
   this.getprice = function(bars, index)
   {
-      //return bars[index].O;
+      // return bars[index].O;
       return (bars[index].O + bars[index].C) / 2;
       //return (bars[index].H + bars[index].L) / 2;
   };
@@ -29,7 +29,7 @@ function Fourier()
 
     av /= np;
 
-    // generate price line modulation (maybe try EMA/MA ?)
+    // generate price line (maybe try EMA/MA ?)
     for (var t=0; t<np; t++)
     {
       this.pv[t] = av;

@@ -24,7 +24,7 @@ c.style.height = `${CHART_HEIGHT}px`;
 
 var ctx = c.getContext("2d");
 
-var pair = "BTC-ETH";
+var pair = "BTC-OMG";
 var exchange = "BITTREX"
 
 // For every rendered screen column there is at least one price
@@ -35,12 +35,13 @@ var first_column_time = null;
 const INTERVALS = [
   ["oneMin", '1m', 1000 * 60],  // interval in miliseconds needed for projected bar time
   ["fiveMin", '5m', 1000 * 60 * 5],
+  ["fiveMin", '15m', 1000 * 60 * 15, true], // emulate 15 min
   ["thirtyMin", '30m', 1000 * 60 * 30],
   ["hour", '1H', 1000 * 60 * 60],
   ["day", '1D', 1000 * 60 * 60 * 24],
 ];
 
-var which_interval = 1;
+var which_interval = 2;
 
 var interval = INTERVALS[which_interval];
 
@@ -58,8 +59,46 @@ fetch(url).then(function(response) {
     }
     throw new TypeError("Invalid data - bad pair?");
   })
-  .then(function(json) { render(json); });
+  .then(function(json) {
+    if (interval[3] == true)
+    {
+      // Bittrex API does not provide 15m interval, so emulate it with three 5m candles
+      console.warn("Warning: using interval emulation");
 
+      var emu_result = [];
+      for (var t=0; t<json.result.length; t+=3)
+      {
+        if (t+2 > json.result.length-1) break;
+        var candles = [
+          json.result[t],
+          json.result[t+1],
+          json.result[t+2],
+        ];
+
+        var i15_time = candles[0].T;
+        var i15_high = Math.max(Math.max(candles[0].H, candles[1].H), candles[2].H);
+        var i15_low = Math.min(Math.min(candles[0].L, candles[1].L), candles[2].L);
+        var i15_open = candles[0].O;
+        var i15_close = candles[2].C;
+        var i15_volume = candles[0].V + candles[1].V + candles[2].V;
+
+        emu_result.push({
+          BV: candles[0].BV, // not sure what this is
+          C: i15_close,
+          H: i15_high,
+          L: i15_low,
+          O: i15_open,
+          T: i15_time,
+          V: i15_volume
+        });
+
+      }
+
+    }
+    json.result = emu_result;
+    render(json);
+  });
+;
 function render(r)
 {
   // clear price lookup table
