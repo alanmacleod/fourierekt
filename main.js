@@ -167,7 +167,7 @@ function draw_fourier(screen_column_latest, f, range)
     future_coords.push([column_x, price_y]);
   }
 
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 4;
 
   for (var t=0; t<past_coords.length-1; t++)
   {
